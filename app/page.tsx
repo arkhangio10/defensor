@@ -36,10 +36,10 @@ export default function UploadPage(): React.ReactElement {
     setError(null);
     try {
       const caseIds: string[] = [];
-      for (let i = 0; i < files.length; i++) {
+      for (const [i, file] of files.entries()) {
         setProgress(`Analizando documento ${i + 1} de ${files.length}…`);
         const fd = new FormData();
-        fd.append("document", files[i]);
+        fd.append("document", file);
         const res = await fetch("/api/analyze", { method: "POST", body: fd });
         if (!res.ok) {
           const body = await res.text();
