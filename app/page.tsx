@@ -83,7 +83,7 @@ export default function UploadPage(): React.ReactElement {
             {files.length === 0
               ? "Toca aquí para elegir una foto o PDF"
               : files.length === 1
-                ? files[0].name
+                ? (files[0]?.name ?? "")
                 : `${files.length} archivos seleccionados`}
           </div>
           <div className="text-xs text-neutral-500">
