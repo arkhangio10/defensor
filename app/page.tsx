@@ -11,45 +11,49 @@ const MAX_MB = 15;
 export default function UploadPage(): React.ReactElement {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
 
-  function onPick(selected: File | null): void {
+  function onPick(selected: File[]): void {
     setError(null);
-    if (!selected) {
-      setFile(null);
+    const oversized = selected.find((f) => f.size > MAX_MB * 1024 * 1024);
+    if (oversized) {
+      setError(`"${oversized.name}" excede ${MAX_MB} MB. Intenta con una foto más liviana.`);
       return;
     }
-    if (selected.size > MAX_MB * 1024 * 1024) {
-      setError(`El archivo excede ${MAX_MB} MB. Intenta con una foto más liviana.`);
-      return;
-    }
-    setFile(selected);
+    setFiles(selected);
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
-    if (!file) {
-      setError("Selecciona un documento primero.");
+    if (files.length === 0) {
+      setError("Selecciona al menos un documento.");
       return;
     }
     setIsAnalyzing(true);
     setError(null);
     try {
-      const fd = new FormData();
-      fd.append("document", file);
-      const res = await fetch("/api/analyze", { method: "POST", body: fd });
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(body || `Error ${res.status}`);
+      const caseIds: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        setProgress(`Analizando documento ${i + 1} de ${files.length}…`);
+        const fd = new FormData();
+        fd.append("document", files[i]);
+        const res = await fetch("/api/analyze", { method: "POST", body: fd });
+        if (!res.ok) {
+          const body = await res.text();
+          throw new Error(body || `Error ${res.status}`);
+        }
+        const data = (await res.json()) as { caseId: string };
+        caseIds.push(data.caseId);
       }
-      const data = (await res.json()) as { caseId: string };
-      router.push(`/result/${data.caseId}`);
+      router.push(`/result/${caseIds[0]}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error desconocido";
       setError(`No pudimos analizar el documento: ${msg}`);
       setIsAnalyzing(false);
+      setProgress(null);
     }
   }
 
@@ -76,10 +80,14 @@ export default function UploadPage(): React.ReactElement {
           className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50 px-6 py-12 text-center transition-colors hover:border-neutral-400 hover:bg-neutral-100"
         >
           <div className="text-sm font-medium text-neutral-900">
-            {file ? file.name : "Toca aquí para elegir una foto o PDF"}
+            {files.length === 0
+              ? "Toca aquí para elegir una foto o PDF"
+              : files.length === 1
+                ? files[0].name
+                : `${files.length} archivos seleccionados`}
           </div>
           <div className="text-xs text-neutral-500">
-            JPG, PNG, HEIC o PDF · hasta {MAX_MB} MB
+            JPG, PNG, HEIC o PDF · hasta {MAX_MB} MB · puedes elegir varios
           </div>
           <input
             ref={inputRef}
@@ -87,8 +95,9 @@ export default function UploadPage(): React.ReactElement {
             name="document"
             type="file"
             accept={ACCEPTED}
+            multiple
             className="sr-only"
-            onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+            onChange={(e) => onPick(Array.from(e.target.files ?? []))}
           />
         </label>
 
@@ -101,8 +110,8 @@ export default function UploadPage(): React.ReactElement {
           </div>
         )}
 
-        <Button type="submit" size="lg" disabled={isAnalyzing || !file}>
-          {isAnalyzing ? "Analizando documento…" : "Analizar documento"}
+        <Button type="submit" size="lg" disabled={isAnalyzing || files.length === 0}>
+          {isAnalyzing ? (progress ?? "Analizando documento…") : "Analizar documento"}
         </Button>
 
         <p className="text-center text-xs text-neutral-500">

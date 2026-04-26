@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { saveCase } from "@/lib/case-storage";
 import type { AnalysisResult, VisionOutput } from "@/lib/types";
 
-const AGENTS_URL = process.env.AGENTS_URL ?? "http://localhost:8000";
+const AGENTS_URL = process.env.AGENTS_URL || "http://localhost:8000";
 
 export async function POST(req: Request): Promise<NextResponse> {
   const form = await req.formData();
