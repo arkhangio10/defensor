@@ -1,7 +1,9 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
+"use client";
 
-import { loadCase } from "@/lib/case-storage";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+
 import type {
   DocumentType,
   HospitalNetwork,
@@ -9,6 +11,13 @@ import type {
   ViolationItem,
   ViolationType,
 } from "@/lib/types";
+
+interface StoredCase {
+  caseId: string;
+  createdAt: string;
+  vision: Record<string, unknown>;
+  analysis?: Record<string, unknown>;
+}
 
 const DOC_TYPE_LABEL: Record<DocumentType, string> = {
   appointment_denial: "Cita denegada",
@@ -45,7 +54,7 @@ function Field({
   value,
 }: {
   label: string;
-  value: string | null;
+  value: string | null | undefined;
 }): React.ReactElement {
   return (
     <div className="border-b border-neutral-100 py-2 last:border-0">
@@ -65,33 +74,94 @@ function ViolationCard({
   item: ViolationItem;
 }): React.ReactElement {
   return (
-    <div
-      className={`rounded-md border p-4 ${SEVERITY_COLOR[item.severity]}`}
-    >
+    <div className={`rounded-md border p-4 ${SEVERITY_COLOR[item.severity]}`}>
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-semibold">{item.article}</span>
         <span className="rounded-full border px-2 py-0.5 text-xs font-medium">
           {VIOLATION_TYPE_LABEL[item.violation_type]}
         </span>
       </div>
-      <p className="mt-1 text-xs italic opacity-75">{item.article_text_excerpt}</p>
+      <p className="mt-1 text-xs italic opacity-75">
+        {item.article_text_excerpt}
+      </p>
       <p className="mt-2 text-sm">{item.explanation}</p>
     </div>
   );
 }
 
-export default async function ResultPage({
-  params,
-}: {
-  params: Promise<{ caseId: string }>;
-}): Promise<React.ReactElement> {
-  const { caseId } = await params;
-  const stored = await loadCase(caseId);
-  if (!stored) notFound();
+export default function ResultPage(): React.ReactElement {
+  const params = useParams();
+  const caseId = params.caseId as string;
+  const [stored, setStored] = useState<StoredCase | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const v = stored.vision;
-  const analysis = stored.analysis;
-  const confidencePct = Math.round(v.confidence * 100);
+  useEffect(() => {
+    const raw = sessionStorage.getItem(`case:${caseId}`);
+    if (raw) {
+      setStored(JSON.parse(raw) as StoredCase);
+    }
+    setLoading(false);
+  }, [caseId]);
+
+  if (loading) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-6 py-10">
+        <p className="text-neutral-500">Cargando caso…</p>
+      </main>
+    );
+  }
+
+  if (!stored) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-4 px-6 py-10">
+        <p className="text-neutral-700">Caso no encontrado o sesión expirada.</p>
+        <Link href="/" className="text-sm text-blue-600 underline underline-offset-4">
+          ← Analizar otro documento
+        </Link>
+      </main>
+    );
+  }
+
+  const v = stored.vision as {
+    document_type: DocumentType;
+    hospital_network: HospitalNetwork;
+    hospital_name?: string;
+    confidence: number;
+    warnings: string[];
+    patient_name?: string;
+    patient_dni?: string;
+    date_of_document?: string;
+    date_of_attempted_care?: string;
+    specialty_requested?: string;
+    reason_given?: string;
+    reason_given_translated_plain_spanish?: string;
+    raw_text_extracted?: string;
+  };
+
+  const analysis = stored.analysis as
+    | {
+        violation: {
+          summary: string;
+          violations: ViolationItem[];
+        };
+        channel: {
+          primary_channel: string;
+          secondary_channel?: string;
+          explanation: string;
+          filing_method: string;
+          estimated_response_days: number;
+          channel_url?: string;
+        };
+        draft: {
+          subject: string;
+          letter_text: string;
+          warnings: string[];
+          disclaimer: string;
+        };
+      }
+    | undefined;
+
+  const confidencePct = Math.round((v.confidence ?? 0) * 100);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-6 py-10">
@@ -100,10 +170,10 @@ export default async function ResultPage({
       </div>
 
       <h1 className="mt-2 text-2xl font-semibold text-neutral-900">
-        {DOC_TYPE_LABEL[v.document_type]}
+        {DOC_TYPE_LABEL[v.document_type] ?? "Documento"}
       </h1>
       <p className="mt-1 text-sm text-neutral-600">
-        {NETWORK_LABEL[v.hospital_network]}
+        {NETWORK_LABEL[v.hospital_network] ?? v.hospital_network}
         {v.hospital_name ? ` · ${v.hospital_name}` : ""}
       </p>
 
@@ -148,7 +218,6 @@ export default async function ResultPage({
 
       {analysis ? (
         <>
-          {/* Violations */}
           <section className="mt-8">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
               Violaciones identificadas
@@ -169,7 +238,6 @@ export default async function ResultPage({
             </div>
           </section>
 
-          {/* Channel */}
           <section className="mt-8 rounded-md border border-neutral-200 bg-white p-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
               Dónde presentar tu queja
@@ -213,7 +281,6 @@ export default async function ResultPage({
             </div>
           </section>
 
-          {/* Complaint letter */}
           <section className="mt-8">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
               Carta de queja formal
@@ -228,10 +295,10 @@ export default async function ResultPage({
                 ))}
               </ul>
             )}
-            <pre className="mt-3 overflow-auto whitespace-pre-wrap rounded-md border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-800 leading-relaxed">
+            <pre className="mt-3 overflow-auto whitespace-pre-wrap rounded-md border border-neutral-200 bg-neutral-50 p-4 text-sm leading-relaxed text-neutral-800">
               {analysis.draft.letter_text}
             </pre>
-            <p className="mt-3 text-xs text-neutral-500 italic">
+            <p className="mt-3 text-xs italic text-neutral-500">
               {analysis.draft.disclaimer}
             </p>
           </section>
@@ -240,8 +307,8 @@ export default async function ResultPage({
         <section className="mt-8 rounded-md border border-neutral-200 bg-neutral-900 p-4 text-sm text-neutral-100">
           <div className="font-medium">Análisis legal en proceso</div>
           <p className="mt-1 text-neutral-300">
-            El documento fue leído. El análisis legal (violaciones y carta de
-            queja) no pudo completarse. Reintenta o contacta soporte.
+            El documento fue leído. El análisis legal no pudo completarse.
+            Reintenta o contacta soporte.
           </p>
         </section>
       )}

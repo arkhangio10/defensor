@@ -12,6 +12,7 @@ from __future__ import annotations
 import io
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -24,6 +25,13 @@ app = FastAPI(
     title="Defensor Agents",
     description="Python agent workers for the Defensor legal advocate.",
     version="0.1.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://defensor-sage.vercel.app", "http://localhost:3000"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
 )
 
 # ---------------------------------------------------------------------------

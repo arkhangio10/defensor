@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 
 const ACCEPTED = "image/jpeg,image/png,image/heic,image/heif,application/pdf";
 const MAX_MB = 15;
+const AGENTS_URL =
+  process.env.NEXT_PUBLIC_AGENTS_URL || "http://localhost:8000";
 
 export default function UploadPage(): React.ReactElement {
   const router = useRouter();
@@ -20,13 +22,17 @@ export default function UploadPage(): React.ReactElement {
     setError(null);
     const oversized = selected.find((f) => f.size > MAX_MB * 1024 * 1024);
     if (oversized) {
-      setError(`"${oversized.name}" excede ${MAX_MB} MB. Intenta con una foto más liviana.`);
+      setError(
+        `"${oversized.name}" excede ${MAX_MB} MB. Intenta con una foto más liviana.`,
+      );
       return;
     }
     setFiles(selected);
   }
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
+  async function onSubmit(
+    e: React.FormEvent<HTMLFormElement>,
+  ): Promise<void> {
     e.preventDefault();
     if (files.length === 0) {
       setError("Selecciona al menos un documento.");
@@ -34,21 +40,53 @@ export default function UploadPage(): React.ReactElement {
     }
     setIsAnalyzing(true);
     setError(null);
+
     try {
-      const caseIds: string[] = [];
       for (const [i, file] of files.entries()) {
         setProgress(`Analizando documento ${i + 1} de ${files.length}…`);
-        const fd = new FormData();
-        fd.append("document", file);
-        const res = await fetch("/api/analyze", { method: "POST", body: fd });
-        if (!res.ok) {
-          const body = await res.text();
-          throw new Error(body || `Error ${res.status}`);
+
+        // Step 1 — Vision: send file directly to Railway
+        const visionFd = new FormData();
+        visionFd.append("document", file);
+        const visionRes = await fetch(`${AGENTS_URL}/vision`, {
+          method: "POST",
+          body: visionFd,
+        });
+        if (!visionRes.ok) {
+          const detail = await visionRes.text();
+          throw new Error(`Agente Visión: ${detail}`);
         }
-        const data = (await res.json()) as { caseId: string };
-        caseIds.push(data.caseId);
+        const vision = await visionRes.json();
+
+        // Step 2 — Analysis: violation + channel + drafter
+        setProgress(
+          `Identificando violaciones legales (${i + 1}/${files.length})…`,
+        );
+        const analyzeRes = await fetch(`${AGENTS_URL}/analyze`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ vision_output: vision }),
+        });
+        const analysis = analyzeRes.ok ? await analyzeRes.json() : undefined;
+
+        // Store in sessionStorage so the result page can read it
+        const caseId = crypto.randomUUID();
+        sessionStorage.setItem(
+          `case:${caseId}`,
+          JSON.stringify({
+            caseId,
+            createdAt: new Date().toISOString(),
+            vision,
+            analysis,
+          }),
+        );
+
+        // Navigate to first result
+        if (i === 0) {
+          router.push(`/result/${caseId}`);
+          return;
+        }
       }
-      router.push(`/result/${caseIds[0]}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error desconocido";
       setError(`No pudimos analizar el documento: ${msg}`);
@@ -110,8 +148,14 @@ export default function UploadPage(): React.ReactElement {
           </div>
         )}
 
-        <Button type="submit" size="lg" disabled={isAnalyzing || files.length === 0}>
-          {isAnalyzing ? (progress ?? "Analizando documento…") : "Analizar documento"}
+        <Button
+          type="submit"
+          size="lg"
+          disabled={isAnalyzing || files.length === 0}
+        >
+          {isAnalyzing
+            ? (progress ?? "Analizando documento…")
+            : "Analizar documento"}
         </Button>
 
         <p className="text-center text-xs text-neutral-500">
