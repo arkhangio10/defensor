@@ -5,6 +5,8 @@ import { NextResponse } from "next/server";
 import { saveCase } from "@/lib/case-storage";
 import type { AnalysisResult, VisionOutput } from "@/lib/types";
 
+export const maxDuration = 60; // Vercel Hobby plan max (seconds)
+
 const AGENTS_URL = process.env.AGENTS_URL || "http://localhost:8000";
 
 export async function POST(req: Request): Promise<NextResponse> {
