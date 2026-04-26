@@ -1,0 +1,27 @@
+{
+  "vision_output": {
+    "document_type": "appointment_denial",
+    "hospital_name": "Clínica San Felipe",
+    "hospital_network": "EPS",
+    "patient_name": "JORGE LUIS HUANCA FLORES",
+    "patient_dni": "62345678",
+    "date_of_document": "2026-04-12",
+    "date_of_attempted_care": "2026-04-15",
+    "specialty_requested": "CARDIOLOGÍA",
+    "reason_given": "ESPECIALIDAD NO CUBIERTA POR SU PLAN",
+    "reason_given_translated_plain_spanish": "La cardiología no está en su plan.",
+    "raw_text_extracted": "CLÍNICA SAN FELIPE...",
+    "confidence": 0.88,
+    "warnings": []
+  },
+  "violations": [
+    {
+      "article": "Ley 29414, Art. 15",
+      "article_text_excerpt": "Tienen derecho a recibir atención de las especialidades que correspondan a su cobertura.",
+      "violation_type": "posible",
+      "explanation": "La cobertura de la EPS puede incluir cardiología básica.",
+      "severity": "media"
+    }
+  ],
+  "recommended_channel": "SUSALUD"
+}

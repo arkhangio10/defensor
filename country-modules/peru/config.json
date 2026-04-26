@@ -1,0 +1,38 @@
+{
+  "country": "peru",
+  "country_name": "Perú",
+  "primary_law": "Ley 29414",
+  "primary_law_name": "Ley de Derechos de Usuarios de Servicios de Salud",
+  "complaint_authority": "SUSALUD",
+  "complaint_url": "https://www.susalud.gob.pe/reclamos-y-sugerencias/",
+  "networks": {
+    "EsSalud": {
+      "primary_channel": "EsSalud Defensoría del Asegurado",
+      "secondary_channel": "SUSALUD",
+      "url": "https://www.essalud.gob.pe/defensoria-del-asegurado/",
+      "response_days": 20
+    },
+    "MINSA": {
+      "primary_channel": "SUSALUD",
+      "secondary_channel": "Defensoría del Pueblo",
+      "url": "https://www.susalud.gob.pe/reclamos-y-sugerencias/",
+      "response_days": 15
+    },
+    "EPS": {
+      "primary_channel": "SUSALUD",
+      "secondary_channel": "SBS",
+      "url": "https://www.susalud.gob.pe/reclamos-y-sugerencias/",
+      "response_days": 15
+    },
+    "private": {
+      "primary_channel": "SUSALUD",
+      "secondary_channel": "INDECOPI",
+      "url": "https://www.susalud.gob.pe/reclamos-y-sugerencias/",
+      "response_days": 15
+    }
+  },
+  "locale_strings": {
+    "complaint_type": "queja formal",
+    "patient_rights_phrase": "sus derechos como asegurado según la Ley 29414"
+  }
+}

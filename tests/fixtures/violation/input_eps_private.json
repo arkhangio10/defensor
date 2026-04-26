@@ -1,0 +1,15 @@
+{
+  "document_type": "appointment_denial",
+  "hospital_name": "Clínica San Felipe",
+  "hospital_network": "EPS",
+  "patient_name": "JORGE LUIS HUANCA FLORES",
+  "patient_dni": "62345678",
+  "date_of_document": "2026-04-12",
+  "date_of_attempted_care": "2026-04-15",
+  "specialty_requested": "CARDIOLOGÍA",
+  "reason_given": "ESPECIALIDAD NO CUBIERTA POR SU PLAN",
+  "reason_given_translated_plain_spanish": "La cardiología no está incluida en su plan de salud.",
+  "raw_text_extracted": "CLÍNICA SAN FELIPE\nSr. JORGE HUANCA: La atención en cardiología no corresponde a su plan EPS básico.",
+  "confidence": 0.88,
+  "warnings": []
+}

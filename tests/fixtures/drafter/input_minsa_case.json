@@ -1,0 +1,27 @@
+{
+  "vision_output": {
+    "document_type": "appointment_denial",
+    "hospital_name": "Centro de Salud San Juan de Miraflores",
+    "hospital_network": "MINSA",
+    "patient_name": "ROSA ELENA MAMANI CONDORI",
+    "patient_dni": "71234567",
+    "date_of_document": "2026-04-10",
+    "date_of_attempted_care": "2026-04-10",
+    "specialty_requested": "MEDICINA GENERAL",
+    "reason_given": null,
+    "reason_given_translated_plain_spanish": "No se indicó ningún motivo.",
+    "raw_text_extracted": "CENTRO DE SALUD SJM...",
+    "confidence": 0.75,
+    "warnings": ["No se observó motivo formal escrito."]
+  },
+  "violations": [
+    {
+      "article": "Ley 29414, Art. 15",
+      "article_text_excerpt": "El usuario tiene derecho a recibir información sobre las razones de la denegación.",
+      "violation_type": "confirmada",
+      "explanation": "No se proporcionó ningún motivo escrito para la denegación.",
+      "severity": "alta"
+    }
+  ],
+  "recommended_channel": "SUSALUD"
+}

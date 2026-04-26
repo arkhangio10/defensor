@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DrafterOutput",
+  "description": "Output of the Drafter Agent — a fully drafted formal complaint letter and associated metadata.",
+  "type": "object",
+  "required": [
+    "letter_text",
+    "addressee",
+    "subject",
+    "legal_articles_cited",
+    "patient_request",
+    "estimated_response_days",
+    "disclaimer",
+    "warnings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "letter_text": {
+      "type": "string",
+      "description": "Full formal complaint letter in legal-register Spanish, ready to print or send. Newlines as \\n."
+    },
+    "addressee": {
+      "type": "string",
+      "description": "Full institution name or authority the letter is addressed to (e.g. 'Superintendencia Nacional de Salud — SUSALUD')."
+    },
+    "subject": {
+      "type": "string",
+      "description": "Subject line of the letter (Asunto), concise and descriptive."
+    },
+    "legal_articles_cited": {
+      "type": "array",
+      "description": "List of legal article references cited in the letter body.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "patient_request": {
+      "type": "string",
+      "description": "Specific request made by the patient in the complaint (Petitorio section summary)."
+    },
+    "estimated_response_days": {
+      "type": "integer",
+      "description": "Number of business days within which the authority must legally respond.",
+      "minimum": 1
+    },
+    "disclaimer": {
+      "type": "string",
+      "description": "Fixed disclaimer: 'Defensor no reemplaza a un abogado. Esta es información legal, no asesoría legal.'"
+    },
+    "warnings": {
+      "type": "array",
+      "description": "List of warnings about missing or weak data that may reduce the complaint's effectiveness.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

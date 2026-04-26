@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VisionAgentOutput",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "document_type",
+    "hospital_name",
+    "hospital_network",
+    "patient_name",
+    "patient_dni",
+    "date_of_document",
+    "date_of_attempted_care",
+    "specialty_requested",
+    "reason_given",
+    "reason_given_translated_plain_spanish",
+    "raw_text_extracted",
+    "confidence",
+    "warnings"
+  ],
+  "properties": {
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "appointment_denial",
+        "prescription",
+        "discharge",
+        "insurance_card",
+        "medical_history",
+        "lab_result",
+        "other"
+      ]
+    },
+    "hospital_name": { "type": ["string", "null"] },
+    "hospital_network": {
+      "type": "string",
+      "enum": ["EsSalud", "MINSA", "EPS", "private", "unknown"]
+    },
+    "patient_name": { "type": ["string", "null"] },
+    "patient_dni": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9]{8}$"
+    },
+    "date_of_document": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "date_of_attempted_care": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "specialty_requested": { "type": ["string", "null"] },
+    "reason_given": { "type": ["string", "null"] },
+    "reason_given_translated_plain_spanish": { "type": "string" },
+    "raw_text_extracted": { "type": "string" },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

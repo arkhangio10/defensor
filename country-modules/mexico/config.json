@@ -1,0 +1,44 @@
+{
+  "country": "mexico",
+  "country_name": "México",
+  "primary_law": "Ley General de Salud, Art. 51",
+  "primary_law_name": "Ley General de Salud — Derechos de los Usuarios",
+  "complaint_authority": "CONAMED",
+  "complaint_url": "https://www.conamed.gob.mx/",
+  "networks": {
+    "IMSS": {
+      "primary_channel": "IMSS OIRS",
+      "secondary_channel": "CONAMED",
+      "url": "https://www.imss.gob.mx/quejas-y-sugerencias",
+      "response_days": 30
+    },
+    "ISSSTE": {
+      "primary_channel": "ISSSTE Quejas",
+      "secondary_channel": "CONAMED",
+      "url": "https://www.issste.gob.mx/",
+      "response_days": 30
+    },
+    "INSABI": {
+      "primary_channel": "CONAMED",
+      "secondary_channel": "CNDH",
+      "url": "https://www.conamed.gob.mx/",
+      "response_days": 30
+    },
+    "private": {
+      "primary_channel": "CONAMED",
+      "secondary_channel": "PROFECO",
+      "url": "https://www.conamed.gob.mx/",
+      "response_days": 30
+    },
+    "unknown": {
+      "primary_channel": "CONAMED",
+      "secondary_channel": null,
+      "url": "https://www.conamed.gob.mx/",
+      "response_days": 30
+    }
+  },
+  "locale_strings": {
+    "complaint_type": "queja CONAMED",
+    "patient_rights_phrase": "sus derechos como usuario según el Artículo 51 de la Ley General de Salud"
+  }
+}

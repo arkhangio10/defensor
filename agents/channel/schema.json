@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ChannelOutput",
+  "description": "Output of the Channel Agent — the authority where a complaint should be filed.",
+  "type": "object",
+  "required": [
+    "primary_channel",
+    "secondary_channel",
+    "channel_url",
+    "explanation",
+    "filing_method",
+    "estimated_response_days"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "primary_channel": {
+      "type": "string",
+      "description": "Name of the primary authority to file the complaint with."
+    },
+    "secondary_channel": {
+      "type": ["string", "null"],
+      "description": "Name of the fallback authority if the primary does not resolve the case."
+    },
+    "channel_url": {
+      "type": ["string", "null"],
+      "description": "Official URL of the primary authority's complaints portal."
+    },
+    "explanation": {
+      "type": "string",
+      "description": "1–2 sentences in plain Spanish explaining where to file and why."
+    },
+    "filing_method": {
+      "type": "string",
+      "enum": ["presencial", "virtual", "ambos"],
+      "description": "Whether the complaint can be filed in-person, online, or both."
+    },
+    "estimated_response_days": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Estimated working days for the authority to respond."
+    }
+  }
+}

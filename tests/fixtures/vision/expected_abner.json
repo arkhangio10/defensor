@@ -1,0 +1,13 @@
+{
+  "document_type": "appointment_denial",
+  "hospital_name": "Hospital Nacional Guillermo Almenara Irigoyen",
+  "hospital_network": "EsSalud",
+  "patient_name": "ABNER RIVERA QUISPE",
+  "patient_dni": "45678901",
+  "date_of_document": "2026-04-15",
+  "date_of_attempted_care": "2026-04-20",
+  "specialty_requested": "TRAUMATOLOGÍA",
+  "reason_given": "SIN CUPO DISPONIBLE",
+  "reason_given_translated_plain_spanish": "No hay espacios disponibles para esa fecha.",
+  "confidence_min": 0.7
+}

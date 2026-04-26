@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StoredCaseData",
+  "type": "object",
+  "required": ["case_id", "created_at", "vision"],
+  "properties": {
+    "case_id": { "type": "string", "format": "uuid" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "vision": { "type": "object" },
+    "analysis": { "type": ["object", "null"] },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["event_type", "timestamp", "channel", "notes"],
+        "properties": {
+          "event_type": { "enum": ["sent", "reminder", "response_received", "escalated", "closed"] },
+          "timestamp": { "type": "string" },
+          "channel": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "status": { "enum": ["pending", "filed", "following_up", "resolved", "closed"] }
+  }
+}

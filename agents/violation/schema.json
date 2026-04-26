@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ViolationOutput",
+  "description": "Output schema for the Defensor Violation Agent.",
+  "type": "object",
+  "required": [
+    "violations",
+    "summary",
+    "recommended_channel",
+    "complaint_viable",
+    "confidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "violations": {
+      "type": "array",
+      "description": "List of identified or possible legal violations.",
+      "items": {
+        "type": "object",
+        "required": [
+          "article",
+          "article_text_excerpt",
+          "violation_type",
+          "explanation",
+          "severity"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "article": {
+            "type": "string",
+            "description": "Citation in the form 'Ley 29414, Art. 15' or 'Ley 29414, Art. 15.3'.",
+            "examples": ["Ley 29414, Art. 15", "Ley 29414, Art. 15.7", "Ley 29414, Art. 29"]
+          },
+          "article_text_excerpt": {
+            "type": "string",
+            "description": "A brief direct quote or paraphrase from the cited article, in Spanish."
+          },
+          "violation_type": {
+            "type": "string",
+            "enum": ["confirmada", "posible", "no_aplica"],
+            "description": "'confirmada' when the facts clearly support the violation; 'posible' when uncertain; 'no_aplica' when explicitly ruling out a violation."
+          },
+          "explanation": {
+            "type": "string",
+            "description": "Plain-language explanation for the patient (in Spanish) of what right was violated and how."
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["alta", "media", "baja"],
+            "description": "'alta' for fundamental access denials; 'media' for procedural violations; 'baja' for informational or minor violations."
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "description": "1–2 sentences in plain Spanish summarizing the violations found, addressed to the patient."
+    },
+    "recommended_channel": {
+      "type": "string",
+      "description": "The most appropriate complaint channel given the network and violation type.",
+      "examples": ["SUSALUD", "EsSalud Defensoría", "INDECOPI", "none"]
+    },
+    "complaint_viable": {
+      "type": "boolean",
+      "description": "True if there is sufficient basis to file a formal complaint."
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "The agent's confidence in this analysis, accounting for document quality and factual clarity."
+    }
+  }
+}

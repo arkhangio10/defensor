@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FollowUpOutput",
+  "type": "object",
+  "required": ["message_type", "message_text", "recommended_action", "days_elapsed"],
+  "additionalProperties": false,
+  "properties": {
+    "message_type": {
+      "type": "string",
+      "enum": ["confirmacion", "recordatorio", "escalacion", "cierre"],
+      "description": "Tipo de comunicación en el ciclo de seguimiento."
+    },
+    "message_text": {
+      "type": "string",
+      "description": "Texto formal en español para enviar o registrar ante la autoridad."
+    },
+    "recommended_action": {
+      "type": "string",
+      "description": "Acción recomendada al paciente en lenguaje claro y accesible."
+    },
+    "days_elapsed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Días transcurridos desde la presentación de la queja original."
+    }
+  }
+}

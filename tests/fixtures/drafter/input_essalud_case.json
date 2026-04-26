@@ -1,0 +1,27 @@
+{
+  "vision_output": {
+    "document_type": "appointment_denial",
+    "hospital_name": "Hospital Nacional Guillermo Almenara Irigoyen",
+    "hospital_network": "EsSalud",
+    "patient_name": "ABNER RIVERA QUISPE",
+    "patient_dni": "45678901",
+    "date_of_document": "2026-04-15",
+    "date_of_attempted_care": "2026-04-20",
+    "specialty_requested": "TRAUMATOLOGÍA",
+    "reason_given": "SIN CUPO DISPONIBLE",
+    "reason_given_translated_plain_spanish": "No hay espacios disponibles para esa fecha.",
+    "raw_text_extracted": "CONSTANCIA DE CITA DENEGADA...",
+    "confidence": 0.92,
+    "warnings": []
+  },
+  "violations": [
+    {
+      "article": "Ley 29414, Art. 15",
+      "article_text_excerpt": "Las personas tienen derecho a acceder a los servicios de salud de manera oportuna.",
+      "violation_type": "confirmada",
+      "explanation": "Se denegó la cita de traumatología sin justificación legal válida.",
+      "severity": "alta"
+    }
+  ],
+  "recommended_channel": "EsSalud Defensoría del Asegurado"
+}

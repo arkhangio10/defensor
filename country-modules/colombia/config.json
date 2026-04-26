@@ -1,0 +1,38 @@
+{
+  "country": "colombia",
+  "country_name": "Colombia",
+  "primary_law": "Ley 1751 de 2015",
+  "primary_law_name": "Ley Estatutaria de Salud",
+  "complaint_authority": "Supersalud",
+  "complaint_url": "https://www.supersalud.gov.co/",
+  "networks": {
+    "EPS": {
+      "primary_channel": "Supersalud",
+      "secondary_channel": "Defensoría del Pueblo",
+      "url": "https://www.supersalud.gov.co/es-co/tramites-y-servicios/presentacion-de-quejas",
+      "response_days": 15
+    },
+    "IPS": {
+      "primary_channel": "Supersalud",
+      "secondary_channel": null,
+      "url": "https://www.supersalud.gov.co/",
+      "response_days": 15
+    },
+    "private": {
+      "primary_channel": "Supersalud",
+      "secondary_channel": "SIC",
+      "url": "https://www.supersalud.gov.co/",
+      "response_days": 15
+    },
+    "unknown": {
+      "primary_channel": "Supersalud",
+      "secondary_channel": "Defensoría del Pueblo",
+      "url": "https://www.supersalud.gov.co/",
+      "response_days": 15
+    }
+  },
+  "locale_strings": {
+    "complaint_type": "tutela / petición formal",
+    "patient_rights_phrase": "sus derechos fundamentales a la salud según la Ley 1751 de 2015"
+  }
+}
