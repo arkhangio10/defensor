@@ -28,11 +28,18 @@ peruano dejó afuera. Construido sobre **Claude Opus 4.7** para el hackathon
 - Colombia (día 3) — Tutela.
 - México (día 3) — Queja ante IMSS.
 
-## Alcance del Día 1 (23 abril 2026)
+## Estado actual (26 abril 2026) — todos los agentes completos
 
-Hoy funciona únicamente el **Agente Visión**: subir foto → ver JSON
-estructurado del documento. Los otros cinco agentes llegan en los días
-siguientes. Ver `CLAUDE.md` para el plan día-por-día.
+| Agente | Estado |
+|---|---|
+| Vision Agent — lee documentos con visión 3.75 MP | ✅ |
+| Violation Agent — identifica violaciones a Ley 29414 | ✅ |
+| Channel Agent — routing determinista por red y país | ✅ |
+| Drafter Agent — carta de queja en registro legal | ✅ |
+| Memory Agent — persistencia de casos en filesystem | ✅ |
+| Follow-Up Agent — seguimiento autónomo 25 días (Managed Agents) | ✅ |
+
+21/21 tests passing. TypeScript strict clean.
 
 ---
 
@@ -99,20 +106,33 @@ no está definido, el test se salta limpiamente.
   /api/analyze    Ruta API que orquesta el upload hacia el servicio Python
   /result/[id]    Página de resultado por caso
 /agents           Agentes Python (uno por carpeta)
-  /vision         ✅ Día 1 — lector de documentos
-  /violation      ⏳ Día 2 — identificador de violaciones legales
-  /channel        ⏳ Día 2 — selector de canal de escalamiento
-  /drafter        ⏳ Día 2 — redactor del reclamo formal
-  /memory         ⏳ Día 3 — persistencia del caso en memoria-filesystem
-  /follow_up      ⏳ Día 3 — Managed Agent de seguimiento 25 días
-  /orchestrator   ⏳ Día 3 — orquestador principal
-  server.py       Servidor FastAPI (puerto 8000)
+  /vision         ✅ lector de documentos (visión 3.75 MP)
+  /violation      ✅ identificador de violaciones legales (Ley 29414)
+  /channel        ✅ selector de canal de escalamiento
+  /drafter        ✅ redactor del reclamo formal (registro legal)
+  /memory         ✅ persistencia del caso en filesystem
+  /follow_up      ✅ Managed Agent de seguimiento autónomo 25 días
+  server.py       ✅ servidor FastAPI (puerto 8000) — orquesta /analyze
 /legal-corpus     PDFs + extractos markdown de leyes peruanas
 /country-modules  Módulos por país: Perú, Colombia, México
 /tests/fixtures   Casos de prueba gold-standard
 /docs             ADRs y documentación
 /demo             Storyboard y guion del demo de 3 minutos
 ```
+
+---
+
+## Deploy (producción)
+
+| Servicio | Plataforma | Config |
+|---|---|---|
+| Frontend Next.js | Vercel (Hobby, gratis) | auto-detect, env var `AGENTS_URL` |
+| Agentes Python | Railway (gratis $5 crédito) | `Procfile` + `.python-version` |
+
+Variables de entorno requeridas:
+
+- **Railway:** `ANTHROPIC_API_KEY`
+- **Vercel:** `AGENTS_URL=https://<tu-app>.railway.app`
 
 ---
 
