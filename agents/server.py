@@ -9,6 +9,8 @@ Fly.io deployment will layer auth on top.
 
 from __future__ import annotations
 
+import io
+
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -64,6 +66,20 @@ def _get_drafter() -> DrafterAgent:
 
 
 ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+PDF_MIME = "application/pdf"
+
+
+def _pdf_to_png(pdf_bytes: bytes) -> bytes:
+    """Convert first page of a PDF to PNG bytes using pypdfium2."""
+    import pypdfium2 as pdfium  # lazy import — only needed for PDF uploads
+
+    pdf = pdfium.PdfDocument(pdf_bytes)
+    page = pdf[0]
+    bitmap = page.render(scale=2)  # 2× scale for readable quality
+    pil_image = bitmap.to_pil()
+    buf = io.BytesIO()
+    pil_image.save(buf, format="PNG")
+    return buf.getvalue()
 
 
 # ---------------------------------------------------------------------------
@@ -104,19 +120,29 @@ def health() -> dict[str, str]:
 @app.post("/vision")
 async def vision(document: UploadFile = File(...)) -> JSONResponse:
     mime = document.content_type or ""
-    if mime not in ALLOWED_MIME:
+
+    if mime not in ALLOWED_MIME and mime != PDF_MIME:
         raise HTTPException(
             status_code=415,
             detail=(
-                f"Tipo de archivo no soportado por visión: {mime}. "
-                "Permitidos: JPEG, PNG, WEBP, GIF. "
-                "(PDF y HEIC se convertirán en el frontend antes del upload.)"
+                f"Tipo de archivo no soportado: {mime}. "
+                "Permitidos: JPEG, PNG, WEBP, GIF, PDF."
             ),
         )
 
     image_bytes = await document.read()
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Archivo vacío.")
+
+    if mime == PDF_MIME:
+        try:
+            image_bytes = _pdf_to_png(image_bytes)
+            mime = "image/png"
+        except Exception as e:
+            raise HTTPException(
+                status_code=422,
+                detail=f"No se pudo convertir el PDF a imagen: {e}",
+            ) from e
 
     try:
         result = _get_vision().read_document(image_bytes, mime)

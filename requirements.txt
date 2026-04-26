@@ -5,3 +5,4 @@ python-multipart>=0.0.9
 pillow>=11.0.0
 pydantic>=2.8.0
 pytest>=8.3.0
+pypdfium2>=4.30.0
