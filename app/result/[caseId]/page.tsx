@@ -94,14 +94,30 @@ export default function ResultPage(): React.ReactElement {
   const caseId = params.caseId as string;
   const [stored, setStored] = useState<StoredCase | null>(null);
   const [loading, setLoading] = useState(true);
+  const [batch, setBatch] = useState<{ caseId: string; fileName: string }[]>(
+    [],
+  );
 
   useEffect(() => {
     const raw = sessionStorage.getItem(`case:${caseId}`);
     if (raw) {
       setStored(JSON.parse(raw) as StoredCase);
     }
+    const batchRaw = sessionStorage.getItem("batch:lastUpload");
+    if (batchRaw) {
+      try {
+        setBatch(
+          JSON.parse(batchRaw) as { caseId: string; fileName: string }[],
+        );
+      } catch {
+        setBatch([]);
+      }
+    }
     setLoading(false);
   }, [caseId]);
+
+  const batchIndex = batch.findIndex((b) => b.caseId === caseId);
+  const inBatch = batch.length > 1 && batchIndex >= 0;
 
   if (loading) {
     return (
@@ -165,11 +181,66 @@ export default function ResultPage(): React.ReactElement {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-6 py-10">
-      <div className="text-xs uppercase tracking-widest text-neutral-500">
-        Caso #{caseId.slice(0, 8)}
-      </div>
+      <nav className="mb-6 flex items-center justify-between">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-500 hover:text-slate-900"
+        >
+          <span className="inline-block h-2 w-2 rounded-full bg-rose-400" />
+          Defensor
+        </Link>
+        <span className="text-xs uppercase tracking-widest text-slate-500">
+          Caso #{caseId.slice(0, 8)}
+        </span>
+      </nav>
 
-      <h1 className="mt-2 text-2xl font-semibold text-neutral-900">
+      {inBatch && (
+        <div className="mb-6 rounded-lg border border-slate-200 bg-white p-3">
+          <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
+            <span>
+              Documento{" "}
+              <strong className="text-slate-900">{batchIndex + 1}</strong> de{" "}
+              {batch.length}
+            </span>
+            <div className="flex gap-2">
+              {batchIndex > 0 && (
+                <Link
+                  href={`/result/${batch[batchIndex - 1]?.caseId ?? ""}`}
+                  className="rounded-full border border-slate-200 px-3 py-1 hover:border-rose-300 hover:text-rose-500"
+                >
+                  ← Anterior
+                </Link>
+              )}
+              {batchIndex < batch.length - 1 && (
+                <Link
+                  href={`/result/${batch[batchIndex + 1]?.caseId ?? ""}`}
+                  className="rounded-full border border-slate-200 px-3 py-1 hover:border-rose-300 hover:text-rose-500"
+                >
+                  Siguiente →
+                </Link>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {batch.map((b, i) => (
+              <Link
+                key={b.caseId}
+                href={`/result/${b.caseId}`}
+                className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold ${
+                  i === batchIndex
+                    ? "bg-rose-500 text-white"
+                    : "border border-slate-200 text-slate-600 hover:border-rose-300 hover:text-rose-500"
+                }`}
+                title={b.fileName}
+              >
+                {String(i + 1).padStart(2, "0")}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <h1 className="mt-2 text-2xl font-semibold text-slate-900">
         {DOC_TYPE_LABEL[v.document_type] ?? "Documento"}
       </h1>
       <p className="mt-1 text-sm text-neutral-600">
