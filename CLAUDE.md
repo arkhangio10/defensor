@@ -26,9 +26,11 @@ We help patients access care they're entitled to.
 ## Tech stack (fixed)
 
 - **Frontend**: Next.js 16 App Router + TS strict + Tailwind v4 + Shadcn/ui
-- **Agents**: Python 3.11 + Claude Agent SDK + FastAPI (local) / Fly.io (prod)
+- **Agents**: Python 3.11 + Claude Agent SDK + FastAPI (local) / Railway (prod)
 - **Model**: `claude-opus-4-7` (1M-context variant where needed)
-- **Database**: JSON files in `tmp/cases/` — Supabase cut (not needed for demo)
+- **Storage (local dev)**: JSON files in `tmp/cases/` via `MemoryAgent`
+- **Storage (prod browser)**: `sessionStorage` keyed `case:<uuid>` + `batch:lastUpload` — Vercel filesystem is ephemeral and per-invocation, so file-based storage cannot survive between requests there. The browser holds the case state for the demo session.
+- **PDF support**: `pypdfium2` converts the first page of a PDF upload to PNG inside `/vision` before passing bytes to the Anthropic vision API (which only accepts images).
 - **Managed Agents**: beta header `managed-agents-2026-04-01`
 - **Notifications**: Twilio cut — Follow-Up events stored in case file instead
 - **Deploy**: Vercel (frontend, free Hobby plan) + Railway (Python agents, free $5 credit — no card needed for trial)
@@ -37,10 +39,14 @@ Do NOT add: LangChain, vector DBs (1M context loads the corpus directly), Docker
 
 ## Deploy notes
 
-- **Vercel** — free Hobby plan covers everything. No Pro needed.
-- **Railway** — preferred over Fly.io. Gives $5 free credit/month, no credit card required for trial. Auto-detects Python from `requirements.txt`. Only needs a `Dockerfile` or `Procfile` — zero app code changes.
+- **Vercel** — free Hobby plan. Serverless function timeout caps at 60s, which is shorter than a full Vision + Violation + Channel + Drafter chain on Opus 4.7. To avoid `FUNCTION_INVOCATION_TIMEOUT`, the browser calls Railway directly for `/vision` and `/analyze`; the Next.js `/api/analyze` route is no longer in the critical path.
+- **Railway** — preferred over Fly.io. Gives $5 free credit/month, no credit card required for trial. Auto-detects Python from `requirements.txt`. Procfile starts `uvicorn agents.server:app`. `.python-version` pins 3.11.
   - Fly.io alternative: requires credit card on file (~$0.05–$0.20 for 2-day demo, no Pro plan needed).
-- **AGENTS_URL** is the only env var that changes between local dev and prod. Set it in Vercel dashboard pointing to the Railway app URL.
+- **CORS**: FastAPI allows `https://defensor-sage.vercel.app` and `http://localhost:3000` so the browser fetch from Vercel's domain succeeds.
+- **Env vars**:
+  - **Railway**: `ANTHROPIC_API_KEY` (required).
+  - **Vercel**: `NEXT_PUBLIC_AGENTS_URL` (required, browser-side — points to Railway). `AGENTS_URL` (optional, server-side fallback for the legacy `/api/analyze` route).
+- **Live URLs**: frontend `https://defensor-sage.vercel.app`, agents `https://web-production-1cda.up.railway.app`.
 
 ## Local environment
 
@@ -63,7 +69,13 @@ npm run typecheck      tsc --noEmit
 ## Project structure
 
 ```
-/app                    Next.js frontend (api/analyze, result/[caseId])
+/app                    Next.js frontend
+  page.tsx              ✅ upload (multi-file) + real % progress bar +
+                           Maxima Legal-inspired design (navy + rose)
+  result/[caseId]/      ✅ client component, reads sessionStorage,
+                           shows numbered chip nav for batch uploads
+  api/analyze/          ⚠️ legacy server route (kept as fallback only;
+                           browser bypasses it to avoid Vercel 60s cap)
 /agents                 Python agents — all implemented except orchestrator/
   vision/               ✅ reads document images → structured fields
   violation/            ✅ maps vision output → Ley 29414 violations
@@ -73,12 +85,14 @@ npm run typecheck      tsc --noEmit
   follow_up/            ✅ 25-day autonomous follow-up loop (Managed Agents)
   orchestrator/         ❌ not built — /analyze endpoint covers this
   server.py             ✅ FastAPI: /vision /violation /channel /drafter /analyze
+                           — CORSMiddleware + PDF→PNG via pypdfium2
 /legal-corpus           ✅ ley-29414.md (Ley 29414 key articles)
 /country-modules        ✅ peru/ colombia/ mexico/ — config.json per country
 /tests/fixtures         ✅ vision/ (3 PNG), violation/ (3 JSON), channel/ (3 JSON),
                            drafter/ (3 JSON), follow_up/ __init__, memory/ (inline)
-/lib /components        ✅ types.ts, case-storage.ts, frontend components
-/docs /demo             ❌ storyboard pending (Day 4)
+/lib /components        ✅ types.ts, case-storage.ts (legacy), button only
+/docs /demo             ✅ storyboard.md (5-beat 3-min script)
+Procfile, .python-version    ✅ Railway deploy config
 ```
 
 ## Conventions
@@ -133,13 +147,28 @@ npm run typecheck      tsc --noEmit
   - **21/21 tests pass** live against API. TypeScript clean.
   - Supabase and Twilio cut — JSON file persistence is sufficient for demo.
 
-- **Day 4 — Apr 26 (7pm)**: Deploy + demo storyboard + submit.
-  - [ ] `Dockerfile` + `Procfile` for Railway (Python agents) — zero app code changes, just config
-  - [ ] Vercel deploy config (Next.js frontend, free Hobby plan)
-  - [ ] Set `ANTHROPIC_API_KEY` as env var in Railway dashboard
-  - [ ] Set `AGENTS_URL=https://your-app.railway.app` in Vercel env vars
-  - [ ] Demo storyboard: Abner Rivera story, live photo read, Follow-Up 100x replay, Peru→Colombia→Mexico switch
-  - [ ] Final submission
+- **Day 4 — Apr 26 ✅**: Deploy + demo storyboard + UX polish.
+  - [x] `Procfile` + `.python-version` for Railway (Python agents)
+  - [x] Vercel deploy (Next.js frontend, Hobby plan)
+  - [x] `ANTHROPIC_API_KEY` set in Railway dashboard
+  - [x] `NEXT_PUBLIC_AGENTS_URL=https://web-production-1cda.up.railway.app` set in Vercel
+  - [x] Demo storyboard at `/demo/storyboard.md` (5 beats, 3 min)
+  - [x] PDF support added (pypdfium2 → PNG conversion server-side)
+  - [x] Multi-document upload (process all, batch nav on result page)
+  - [x] Real % progress bar during analysis
+  - [x] Maxima Legal-inspired redesign (navy + rose accents)
+  - [x] Architecture pivot: browser → Railway direct (sidesteps Vercel 60s cap and ephemeral filesystem)
+  - [x] CORS middleware on FastAPI for the Vercel origin
+  - [ ] Final hackathon submission
+
+### Lessons learned (Day 4)
+
+- Vercel Hobby caps serverless functions at 60 s, and a full 4-call Opus 4.7 chain can exceed that. The fix is architectural — call the long-running backend from the browser, not from a Vercel serverless function. `export const maxDuration = 60` only ratchets the cap up to the plan max; it does not unlock more.
+- Vercel's per-invocation filesystem means file-based case storage (`tmp/cases/<uuid>.json`) cannot be read back by a later request — the result page would always 404. `sessionStorage` in the browser is the simplest substitute for a demo; a real deployment would need Supabase or KV.
+- `process.env.AGENTS_URL ?? "http://localhost:8000"` doesn't fall back when the env var is set to an empty string; use `||` if you want empty values to also fall back. Bit us once with `Failed to parse URL from /vision`.
+- Browser-side env vars in Next.js need the `NEXT_PUBLIC_` prefix. `AGENTS_URL` (server) and `NEXT_PUBLIC_AGENTS_URL` (browser) are separate variables and both may need to be set.
+- TS strict + `noUncheckedIndexedAccess` makes `array[i]` return `T | undefined`. Use `for (const [i, x] of arr.entries())` for definite element types, or `arr[i]?.foo ?? ""` at the use site.
+- Anthropic vision API only accepts image MIME types — PDFs must be rasterized server-side. `pypdfium2` is a Python wheel with no system deps, perfect for Railway.
 
 Do not merge features out of day order without approval.
 
